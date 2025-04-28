@@ -5,4 +5,7 @@ plugins {
     alias(libs.plugins.google.services) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.secrets.gradle.plug) apply false
+    alias(libs.plugins.hilt.plugin) apply false
+    alias(libs.plugins.ksp.plugin) apply false
+
 }

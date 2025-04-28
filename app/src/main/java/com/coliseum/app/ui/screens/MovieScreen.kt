@@ -14,6 +14,7 @@ import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.TmdbMovieDetail
 import coil3.compose.AsyncImage
 import com.coliseum.app.BuildConfig
+import com.coliseum.app.TmdbClient
 import java.util.Locale
 
 @Composable
@@ -34,9 +35,6 @@ fun MovieScreen(movieId: Int?) {
 
     LaunchedEffect(Unit) {
         // TMDB setup
-        val tmdb = Tmdb3(
-            tmdbApiKey = BuildConfig.TMDB_API_KEY
-        )
-        movieInfo = tmdb.movies.getDetails(movieId!!)
+        movieInfo = TmdbClient.tmdb.movies.getDetails(movieId!!)
     }
 }

@@ -85,3 +85,7 @@ private fun NavigationSetup() {
         }
     }
 }
+object TmdbClient {
+    private const val API_KEY = BuildConfig.TMDB_API_KEY
+    val tmdb = Tmdb3(API_KEY)
+}

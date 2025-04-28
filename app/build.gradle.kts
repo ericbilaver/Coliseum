@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.secrets.gradle.plug)
+    alias(libs.plugins.ksp.plugin)
 }
 
 android {
@@ -72,6 +73,8 @@ dependencies {
     implementation(libs.moviebase.tmdb.api)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.hilt.android)
+    ksp(libs.dagger.hilt.android.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

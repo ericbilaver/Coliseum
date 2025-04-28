@@ -27,6 +27,7 @@ import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.TmdbMovie
 import coil3.compose.AsyncImage
 import com.coliseum.app.BuildConfig
+import com.coliseum.app.TmdbClient
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,10 +37,6 @@ fun HomeScreen(
     var movieList by remember { mutableStateOf<List<TmdbMovie>>(listOf()) }
     var searchQuery by remember { mutableStateOf("") }
     var isSearchActive by remember { mutableStateOf(false) }
-    // TMDB setup
-    val tmdb = Tmdb3(
-        tmdbApiKey = BuildConfig.TMDB_API_KEY
-    )
 
     SearchBar(
         query = searchQuery,
@@ -73,7 +70,7 @@ fun HomeScreen(
 
     LaunchedEffect(searchQuery) {
         if (searchQuery.length > 4)
-            movieList = tmdb.search.findMovies(
+            movieList = TmdbClient.tmdb.search.findMovies(
                 query = searchQuery,
                 page = 1
             ).results
