@@ -16,11 +16,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import app.moviebase.tmdb.Tmdb3
+import app.moviebase.tmdb.Tmdb4
+import com.coliseum.app.ui.screens.HomeScreen
 import com.coliseum.app.ui.theme.ColiseumTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         enableEdgeToEdge()
         setContent {
             ColiseumTheme {
@@ -46,6 +51,7 @@ private fun NavigationSetup() {
                 Button(onClick = { navController.navigate("detail") }) {
                     Text("Detail")
                 }
+                HomeScreen()
             }
 
         }
