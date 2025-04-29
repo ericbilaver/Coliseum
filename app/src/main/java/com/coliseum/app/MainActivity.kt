@@ -5,21 +5,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import app.moviebase.tmdb.Tmdb3
-import app.moviebase.tmdb.Tmdb4
 import com.coliseum.app.ui.screens.HomeScreen
 import com.coliseum.app.ui.screens.MovieScreen
 import com.coliseum.app.ui.theme.ColiseumTheme
@@ -32,7 +26,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ColiseumTheme {
-                NavigationSetup()
+                NavigationHoster()
             }
         }
     }
@@ -49,7 +43,7 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-private fun NavigationSetup() {
+private fun NavigationHoster() {
     val navController = rememberNavController()
 
     NavHost(
