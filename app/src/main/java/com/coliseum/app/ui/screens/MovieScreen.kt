@@ -15,6 +15,10 @@ import app.moviebase.tmdb.model.TmdbMovieDetail
 import coil3.compose.AsyncImage
 import com.coliseum.app.BuildConfig
 import com.coliseum.app.TmdbClient
+import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.ktx.app
 import java.util.Locale
 
 @Composable
@@ -36,5 +40,17 @@ fun MovieScreen(movieId: Int?) {
     LaunchedEffect(Unit) {
         // TMDB setup
         movieInfo = TmdbClient.tmdb.movies.getDetails(movieId!!)
+        // firestore fetch
+        val db = Firebase.firestore
+        db.collection("test-max-list")
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    println("${document.id} => ${document.data}")
+                }
+            }
+            .addOnFailureListener { exception ->
+                println("Error getting documents $exception")
+            }
     }
 }
