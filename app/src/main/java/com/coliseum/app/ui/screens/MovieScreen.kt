@@ -10,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.TmdbMovieDetail
 import coil3.compose.AsyncImage
@@ -30,10 +32,10 @@ fun MovieScreen(movieId: Int?) {
             contentDescription = null
         )
         movieInfo?.let {
-            Text(it.title)
+            Text(it.title, fontWeight = FontWeight.Bold)
+            Text(text = it.tagline, fontStyle = FontStyle.Italic)
             Text("${it.runtime}mins")
             Text(it.overview)
-
         }
     }
 
