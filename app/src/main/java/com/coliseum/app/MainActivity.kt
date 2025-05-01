@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -19,8 +18,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import app.moviebase.tmdb.Tmdb3
-import com.coliseum.app.ui.screens.HomeScreen
-import com.coliseum.app.ui.screens.MovieScreen
+import com.coliseum.app.ui.screens.homescreen.HomeScreen
+import com.coliseum.app.ui.screens.movie.MovieScreen
 import com.coliseum.app.ui.theme.ColiseumTheme
 
 class MainActivity : ComponentActivity() {
@@ -81,7 +80,7 @@ private fun NavigationHoster() {
                 Button(onClick = { navController.popBackStack() }) {
                     Text("Go Back")
                 }
-                MovieScreen(movieId)
+                MovieScreen(movieId = movieId)
             }
         }
     }
