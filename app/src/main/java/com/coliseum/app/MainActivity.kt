@@ -161,7 +161,9 @@ fun SearchNavHost() {
     val searchNavController = rememberNavController()
     NavHost(searchNavController, startDestination = "search") {
         composable("search") {
-            SearchScreen()
+            Column {
+                SearchScreen()
+            }
         }
     }
 }
