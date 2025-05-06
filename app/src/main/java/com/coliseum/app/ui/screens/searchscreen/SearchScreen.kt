@@ -1,5 +1,6 @@
 package com.coliseum.app.ui.screens.searchscreen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -24,9 +25,12 @@ import com.google.firebase.ktx.Firebase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen() {
+fun SearchScreen(
+    onTheatreClick: (theatreId: String) -> Unit
+) {
     var searchQuery by remember { mutableStateOf("") }
     val theatresList = remember { mutableStateListOf<String>() }
+    val theatresIdList = remember { mutableStateListOf<String>() }
 
     fun callDB() {
         Firebase.firestore
@@ -40,6 +44,7 @@ fun SearchScreen() {
                     //println("${document.id} => ${document.data}")
                     println(document.data["name"])
                     theatresList.add(document.data["name"].toString())
+                    theatresIdList.add(document.id)
                 }
             }
             .addOnFailureListener { exception ->
@@ -67,8 +72,8 @@ fun SearchScreen() {
     ) {
         Text("Search")
     }
-    theatresList.forEach {
-        Text(it)
+    theatresList.forEachIndexed { index, theatre ->
+        Text(theatre, modifier = Modifier.clickable {onTheatreClick(theatresIdList[index])})
     }
 
 }

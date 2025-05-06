@@ -38,6 +38,7 @@ import app.moviebase.tmdb.Tmdb3
 import com.coliseum.app.ui.screens.homescreen.HomeScreen
 import com.coliseum.app.ui.screens.movie.MovieScreen
 import com.coliseum.app.ui.screens.searchscreen.SearchScreen
+import com.coliseum.app.ui.screens.theatre.TheatreScreen
 import com.coliseum.app.ui.screens.user.UserScreen
 import com.coliseum.app.ui.theme.ColiseumTheme
 import com.coliseum.app.ui.theme.Pink40
@@ -159,10 +160,29 @@ fun HomeNavHost() {
 @Composable
 fun SearchNavHost() {
     val searchNavController = rememberNavController()
-    NavHost(searchNavController, startDestination = "search") {
-        composable("search") {
+    NavHost(searchNavController, startDestination = SearchScreens.Search.route) {
+        composable(SearchScreens.Search.route) {
             Column {
-                SearchScreen()
+                SearchScreen(
+                    onTheatreClick = { theatreId ->
+                        searchNavController.navigate(SearchScreens.Theatre.createRoute(theatreId))
+                    }
+                )
+            }
+        }
+
+        composable(
+            SearchScreens.Theatre.route,
+            arguments = listOf(
+                navArgument("theatreId") { type = NavType.StringType }
+            )
+        ) {
+            val theatreId = it.arguments?.getString("theatreId") ?: ""
+            Column {
+                Button(onClick = { searchNavController.popBackStack() }) {
+                    Text("Go Back")
+                }
+                TheatreScreen(theatreId = theatreId)
             }
         }
     }
@@ -207,6 +227,15 @@ sealed class HomeScreens(val route: String) {
     object MovieDetails : HomeScreens("movie/{movieId}") {
         fun createRoute(movieId: Int): String {
             return "movie/$movieId"
+        }
+    }
+}
+
+sealed class SearchScreens(val route: String) {
+    object Search : SearchScreens("home")
+    object Theatre : SearchScreens("theatre/{theatreId}") {
+        fun createRoute(theatreId: String): String {
+            return "theatre/$theatreId"
         }
     }
 }
