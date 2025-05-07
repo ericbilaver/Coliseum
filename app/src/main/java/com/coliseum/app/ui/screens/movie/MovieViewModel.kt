@@ -19,10 +19,10 @@ enum class MovieFormat {
     companion object {
         fun stringToFormat(string: String): MovieFormat? {
             return when (string) {
-                "entirelyDigital" -> EntirelyDigital
-                "partialDigital" -> PartialDigital
-                "entirelyFilm" -> EntirelyFilm
-                "partialFilm" -> PartialFilm
+                "digitalEntire" -> EntirelyDigital
+                "digitalPartial" -> PartialDigital
+                "65mmEntire" -> EntirelyFilm
+                "65mmPartial" -> PartialFilm
                 else -> null
             }
         }
@@ -40,7 +40,8 @@ class MovieViewModel @Inject constructor(): ViewModel() {
     }
 
     suspend fun checkMovieFormat(movieId: Int) {
-        val result = Firebase.firestore.collection("test-max-list").document(movieId.toString())
+        val result = Firebase.firestore.collection("movies-test")
+            .whereEqualTo("tmdbid", movieId)
             .get()
             .addOnSuccessListener { documentSnapshot ->
                 println(documentSnapshot)
@@ -52,8 +53,11 @@ class MovieViewModel @Inject constructor(): ViewModel() {
         result
             .addOnSuccessListener { documentSnapshot ->
                 println(documentSnapshot)
-                formatInfo.value = MovieFormat.stringToFormat(documentSnapshot.data?.get("format").toString())
-
+                if (documentSnapshot.documents.isNotEmpty()) {
+                    val docToGet = documentSnapshot.documents[0]
+                    formatInfo.value =
+                        MovieFormat.stringToFormat(docToGet.get ("imax").toString())
+                }
             }
             .addOnFailureListener { exception ->
                 println("Error checking document: ${exception.message}")
