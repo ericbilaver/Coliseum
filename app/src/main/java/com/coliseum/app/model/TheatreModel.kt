@@ -7,6 +7,10 @@ data class TheatreModel(
     val city: String = "",
     val images: List<String> = listOf<String>(),
     val totalAuditoriums: Int = 0,
+    val auditoriums: List<Auditorium> = listOf<Auditorium>()
+)
 
-
-    )
+data class Auditorium(
+    val number: Int = 0,
+    val type: String = "",
+)
