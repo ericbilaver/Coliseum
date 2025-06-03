@@ -30,6 +30,7 @@ fun MovieScreen(
 ) {
     val movieInfo by viewModel.movieInfo.collectAsState()
     val formatInfo by viewModel.formatInfo.collectAsState()
+
     Column(verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally) {
         AsyncImage(
             model = "https://image.tmdb.org/t/p/w500/${movieInfo?.posterImage?.path}",
@@ -40,9 +41,11 @@ fun MovieScreen(
             Text(text = it.tagline, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center)
             Text("${it.runtime}mins")
             formatInfo?.let {
-                FormatImageResolver(it)
+                FormatImageResolver(it.format ?: MovieFormat.PartialFilm)
+                Text(it.aspectRatios.toString())
             }
             Text(it.overview)
+
 
         }
     }
@@ -50,7 +53,7 @@ fun MovieScreen(
     LaunchedEffect(Unit) {
         // TMDB setup
         viewModel.getMovieDetails(movieId ?: 0)
-        viewModel.checkMovieFormat(movieId ?: 0)
+        viewModel.checkFirebaseMovie(movieId ?: 0)
     }
 }
 

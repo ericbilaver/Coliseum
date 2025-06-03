@@ -3,6 +3,7 @@ package com.coliseum.app.ui.screens.movie
 import androidx.lifecycle.ViewModel
 import app.moviebase.tmdb.model.TmdbMovieDetail
 import com.coliseum.app.TmdbClient
+import com.coliseum.app.model.FireBaseMovieModel
 import com.coliseum.app.ui.screens.movie.MovieFormat.EntirelyDigital
 import com.coliseum.app.ui.screens.movie.MovieFormat.EntirelyFilm
 import com.coliseum.app.ui.screens.movie.MovieFormat.PartialDigital
@@ -29,17 +30,18 @@ enum class MovieFormat {
     }
 }
 
+
 @HiltViewModel
 class MovieViewModel @Inject constructor(): ViewModel() {
     val movieInfo = MutableStateFlow<TmdbMovieDetail?>(null)
-    val formatInfo = MutableStateFlow<MovieFormat?>(null)
+    val formatInfo = MutableStateFlow<FireBaseMovieModel?>(null)
 
     suspend fun getMovieDetails(movieId: Int) {
         // TMDB setup
         movieInfo.value = TmdbClient.tmdb.movies.getDetails(movieId)
     }
 
-    suspend fun checkMovieFormat(movieId: Int) {
+    suspend fun checkFirebaseMovie(movieId: Int) {
         val result = Firebase.firestore.collection("movies-test")
             .whereEqualTo("tmdbid", movieId)
             .get()
@@ -55,8 +57,7 @@ class MovieViewModel @Inject constructor(): ViewModel() {
                 println(documentSnapshot)
                 if (documentSnapshot.documents.isNotEmpty()) {
                     val docToGet = documentSnapshot.documents[0]
-                    formatInfo.value =
-                        MovieFormat.stringToFormat(docToGet.get ("imax").toString())
+                    formatInfo.value = docToGet.toObject(FireBaseMovieModel::class.java)
                 }
             }
             .addOnFailureListener { exception ->
