@@ -1,74 +1,141 @@
-package com.coliseum.app.ui.screens.movie
-
-import android.media.Image
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.moviebase.tmdb.image.TmdbImageUrlBuilder
 import coil3.compose.AsyncImage
-import com.coliseum.app.R
-
+import com.coliseum.app.model.Movie
+import com.coliseum.app.ui.screens.movie.EditMovieDialog
 
 @Composable
 fun MovieScreen(
-    viewModel: MovieViewModel = viewModel(),
-    movieId: Int?
+    movieId: String,
+    viewModel: MovieViewModel = viewModel()
 ) {
-    val movieInfo by viewModel.movieInfo.collectAsState()
-    val formatInfo by viewModel.formatInfo.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val tmdbMovie by viewModel.tmdbMovie.collectAsState()
+    var showEditDialog by remember { mutableStateOf(false) }
 
-    Column(verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally) {
+    LaunchedEffect(movieId) {
+        viewModel.loadMovie(movieId)
+        viewModel.getTMDBMovieDetails(movieId.toInt())
+    }
+
+    // Handle success/error messages
+    LaunchedEffect(uiState.success, uiState.error) {
+        // You can show snackbars or other notifications here
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Display movie information
+        val posterUrl = TmdbImageUrlBuilder.build(tmdbMovie?.posterImage?.path ?: "", "w500")
+        println(posterUrl)
         AsyncImage(
-            model = "https://image.tmdb.org/t/p/w500/${movieInfo?.posterImage?.path}",
+            model = posterUrl,
             contentDescription = null
         )
-        movieInfo?.let {
-            Text(it.title, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-            Text(text = it.tagline, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center)
-            Text("${it.runtime}mins")
-            formatInfo?.let {
-                FormatImageResolver(it.format ?: MovieFormat.PartialFilm)
-                Text(it.aspectRatios.toString())
+        when {
+            uiState.isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
-            Text(it.overview)
 
+            uiState.error != null -> {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = uiState.error ?: "",
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
 
+            uiState.movie != null -> {
+
+                Spacer(Modifier.height(16.dp))
+                MovieInfoCard(
+                    movie = uiState.movie!!,
+                    onEditClick = { showEditDialog = true }
+                )
+            }
         }
     }
 
-    LaunchedEffect(Unit) {
-        // TMDB setup
-        viewModel.getMovieDetails(movieId ?: 0)
-        viewModel.checkFirebaseMovie(movieId ?: 0)
+    // Show edit dialog
+    if (showEditDialog && uiState.movie != null) {
+        EditMovieDialog(
+            movie = uiState.movie!!,
+            movieId = movieId,
+            onDismiss = {
+                showEditDialog = false
+                viewModel.clearMessages()
+            },
+            onSave = { id, updatedMovie ->
+                viewModel.updateMovie(id, updatedMovie)
+                showEditDialog = false
+            }
+        )
     }
 }
 
 @Composable
-fun FormatImageResolver(format: MovieFormat) {
-    val imageID = when(format) {
-        MovieFormat.PartialFilm -> R.drawable.imax_70mm_logo
-        MovieFormat.EntirelyFilm -> R.drawable.imax_70mm_logo
-        MovieFormat.PartialDigital -> R.drawable.imax_logo_blue
-        MovieFormat.EntirelyDigital -> R.drawable.imax_logo_blue
-    }
+fun MovieInfoCard(
+    movie: Movie,
+    onEditClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = movie.title,
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Button(onClick = onEditClick) {
+                    Text("Edit")
+                }
+            }
 
-    Image(
-        painter = painterResource(imageID),
-        contentDescription = null,
-        modifier = Modifier.width(100.dp)
-    )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text("TMDB ID: ${movie.tmdbid}")
+            Text("Aspect Ratios: ${movie.aspectRatios.joinToString(", ")}")
+            Text("Extra Format: ${movie.extraformat}")
+            Text("IMAX: ${movie.imax}")
+            Text("Information: ${movie.information}")
+            Text("Notes: ${movie.notes}")
+        }
+    }
 }

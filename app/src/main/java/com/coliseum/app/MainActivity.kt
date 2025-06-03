@@ -1,5 +1,6 @@
 package com.coliseum.app
 
+import MovieScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -38,7 +39,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import app.moviebase.tmdb.Tmdb3
 import com.coliseum.app.ui.screens.homescreen.HomeScreen
-import com.coliseum.app.ui.screens.movie.MovieScreen
 import com.coliseum.app.ui.screens.searchscreen.SearchScreen
 import com.coliseum.app.ui.screens.theatre.TheatreScreen
 import com.coliseum.app.ui.screens.user.UserScreen
@@ -153,7 +153,7 @@ fun HomeNavHost() {
                 Button(onClick = { homeNavController.popBackStack() }) {
                     Text("Go Back")
                 }
-                MovieScreen(movieId = movieId)
+                MovieScreen(movieId = movieId.toString())
             }
         }
     }
