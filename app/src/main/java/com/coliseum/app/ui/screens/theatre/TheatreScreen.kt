@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -33,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.coliseum.app.model.Theatre
 import com.coliseum.app.ui.theme.PurpleGrey40
@@ -53,6 +56,8 @@ fun TheatreScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+            .height(1500.dp)
     ) {
         when {
             uiState.isLoading -> {
@@ -163,7 +168,9 @@ fun AuditoriumsListings(
     onAuditoriumClick: () -> Unit
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(3)
+        columns = GridCells.Fixed(3),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        userScrollEnabled = false
     ) {
         items(theatreInfo.totalAuditoriums) { auditoriumIndex ->
             val auditorium = theatreInfo.auditoriums.find { it.number == (auditoriumIndex + 1) }
@@ -171,16 +178,16 @@ fun AuditoriumsListings(
             if (auditorium != null) {
                 val formatList = auditorium.type.split("/")
                 Column(
-                    modifier = Modifier.size(60.dp).background(PurpleGrey40)
+                    modifier = Modifier.height(80.dp).background(PurpleGrey40)
                 ) {
                     Text(auditorium.number.toString(), color = Color.White)
-                    formatList.forEach { Text(it, color = Color.White) }
+                    formatList.forEach { Text(it, color = Color.White, fontSize = 15.sp) }
                 }
             }
             // regular theatre
             else {
                 Column(
-                    modifier = Modifier.size(60.dp).background(Color.Black)
+                    modifier = Modifier.height(80.dp).background(Color.Black)
                 ) {
                     Text((auditoriumIndex + 1).toString(), color = Color.Gray)
                 }
@@ -245,31 +252,14 @@ fun TheatreInfoCard(
                 InfoRow("Capacity", theatre.capacity.toString())
             }
 
-            if (theatre.totalAuditoriums > 0) {
-                InfoRow("Total Auditoriums", theatre.totalAuditoriums.toString())
-            }
-
-            if (theatre.auditoriums.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Auditoriums",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                theatre.auditoriums.forEach { auditorium ->
-                    Text(
-                        text = "Auditorium ${auditorium.number}: ${auditorium.type}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(start = 8.dp, top = 2.dp)
-                    )
-                }
-            }
-
             if (theatre.note.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 InfoRow("Note", theatre.note)
             }
         }
+    }
+    if (theatre.totalAuditoriums > 0) {
+        AuditoriumsListings(theatreInfo = theatre, onAuditoriumClick = {})
     }
 }
 
