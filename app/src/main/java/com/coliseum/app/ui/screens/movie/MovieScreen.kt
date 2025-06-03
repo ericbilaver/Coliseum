@@ -16,8 +16,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder
 import coil3.compose.AsyncImage
 import com.coliseum.app.model.Movie
-import com.coliseum.app.ui.screens.movie.EditMovieDialog
-
 @Composable
 fun MovieScreen(
     movieId: String,
@@ -28,28 +26,15 @@ fun MovieScreen(
     var showEditDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(movieId) {
-        viewModel.loadMovie(movieId)
+        viewModel.loadOrCreateMovie(movieId)
         viewModel.getTMDBMovieDetails(movieId.toInt())
-    }
-
-    // Handle success/error messages
-    LaunchedEffect(uiState.success, uiState.error) {
-        // You can show snackbars or other notifications here
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(16.dp)
     ) {
-        // Display movie information
-        val posterUrl = TmdbImageUrlBuilder.build(tmdbMovie?.posterImage?.path ?: "", "w500")
-        println(posterUrl)
-        AsyncImage(
-            model = posterUrl,
-            contentDescription = null
-        )
         when {
             uiState.isLoading -> {
                 Box(
@@ -67,39 +52,93 @@ fun MovieScreen(
                         containerColor = MaterialTheme.colorScheme.errorContainer
                     )
                 ) {
-                    Text(
-                        text = uiState.error ?: "",
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onErrorContainer
-                    )
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = uiState.error ?: "",
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { viewModel.loadOrCreateMovie(movieId) }
+                        ) {
+                            Text("Retry")
+                        }
+                    }
                 }
             }
 
             uiState.movie != null -> {
-
-                Spacer(Modifier.height(16.dp))
-                MovieInfoCard(
-                    movie = uiState.movie!!,
-                    onEditClick = { showEditDialog = true }
-                )
+                tmdbMovie?.let {
+                    AsyncImage(
+                        model = TmdbImageUrlBuilder.build(it.posterImage?.path ?: "", "w500"),
+                        contentDescription = null
+                    )
+                }
+                if (uiState.isCreatingNew) {
+                    // Show create new movie card
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "Movie Not Found",
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+                            Text(
+                                text = "No movie found with TMDB ID: ${uiState.movie!!.tmdbid}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { showEditDialog = true },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Create New Movie")
+                            }
+                        }
+                    }
+                } else {
+                    // Show existing movie
+                    MovieInfoCard(
+                        movie = uiState.movie!!,
+                        onEditClick = { showEditDialog = true }
+                    )
+                }
             }
         }
     }
 
-    // Show edit dialog
+    // Show dialog for both create and edit
     if (showEditDialog && uiState.movie != null) {
         EditMovieDialog(
             movie = uiState.movie!!,
-            movieId = movieId,
+            tmdbMovie = tmdbMovie,
+            movieId = if (uiState.isCreatingNew) null else uiState.movie!!.id,
+            isCreating = uiState.isCreatingNew,
             onDismiss = {
                 showEditDialog = false
                 viewModel.clearMessages()
             },
             onSave = { id, updatedMovie ->
-                viewModel.updateMovie(id, updatedMovie)
+                if (uiState.isCreatingNew) {
+                    viewModel.createMovie(updatedMovie)
+                } else {
+                    viewModel.updateMovie(id!!, updatedMovie)
+                }
                 showEditDialog = false
             }
         )
+    }
+
+    // Show success message
+    uiState.success?.let { message ->
+        LaunchedEffect(message) {
+            // Show snackbar or toast
+            // Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
     }
 }
 

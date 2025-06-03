@@ -21,36 +21,36 @@ class MovieViewModel : ViewModel() {
         tmdbMovie.value = TmdbClient.tmdb.movies.getDetails(movieId)
     }
 
-    fun loadMovie(movieId: String) {
+    fun createMovie(movie: Movie) {
         viewModelScope.launch {
             try {
                 _uiState.value = _uiState.value.copy(isLoading = true)
 
-                // Get QuerySnapshot instead of DocumentSnapshot
-                val querySnapshot = db.collection("movies-test")
-                    .whereEqualTo("tmdbid", movieId.toLong()) // Convert to Long if movieId is String
-                    .get()
-                    .await()
+                val movieMap = hashMapOf<String, Any>(
+                    "title" to movie.title,
+                    "tmdbid" to movie.tmdbid,
+                    "aspectRatios" to movie.aspectRatios,
+                    "extraformat" to movie.extraformat,
+                    "imax" to movie.imax,
+                    "information" to movie.information,
+                    "notes" to movie.notes
+                )
 
-                if (!querySnapshot.isEmpty) {
-                    // Get the first document from the query results
-                    val document = querySnapshot.documents.first()
-                    val movie = document.toObject(Movie::class.java)?.copy(id = document.id)
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        movie = movie,
-                        error = null
-                    )
-                } else {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = "Movie not found"
-                    )
-                }
+                // Add new document to Firestore
+                val documentRef = db.collection("movies-test").add(movieMap).await()
+
+                val createdMovie = movie.copy(id = documentRef.id)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    movie = createdMovie,
+                    success = "Movie created successfully",
+                    error = null,
+                    isCreatingNew = false
+                )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Error loading movie: ${e.message}"
+                    error = "Error creating movie: ${e.message}"
                 )
             }
         }
@@ -71,13 +71,7 @@ class MovieViewModel : ViewModel() {
                     "notes" to movie.notes
                 )
 
-                // Get QuerySnapshot instead of DocumentSnapshot
-                val querySnapshot = db.collection("movies-test")
-                    .whereEqualTo("tmdbid", movieId.toLong()) // Convert to Long if movieId is String
-                    .get()
-                    .await()
-                val yo = querySnapshot.documents.first()
-                yo.reference.update(movieMap)
+                db.collection("movies-test").document(movieId).update(movieMap).await()
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -94,6 +88,62 @@ class MovieViewModel : ViewModel() {
         }
     }
 
+    fun loadOrCreateMovie(movieId: String) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(isLoading = true)
+
+                val tmdbId = movieId.toLongOrNull()
+                if (tmdbId == null) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Invalid movie ID format"
+                    )
+                    return@launch
+                }
+
+                val querySnapshot = db.collection("movies-test")
+                    .whereEqualTo("tmdbid", tmdbId)
+                    .get()
+                    .await()
+
+                if (!querySnapshot.isEmpty) {
+                    // Movie exists, load it
+                    val document = querySnapshot.documents.first()
+                    val movie = document.toObject(Movie::class.java)?.copy(id = document.id)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        movie = movie,
+                        error = null,
+                        isCreatingNew = false
+                    )
+                } else {
+                    // Movie doesn't exist, prepare for creation
+                    val newMovie = Movie(
+                        tmdbid = tmdbId,
+                        title = tmdbMovie.value?.title ?: "", // Will be filled by user
+                        aspectRatios = listOf(),
+                        extraformat = "",
+                        imax = "",
+                        information = "",
+                        notes = ""
+                    )
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        movie = newMovie,
+                        error = null,
+                        isCreatingNew = true
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Error loading movie: ${e.message}"
+                )
+            }
+        }
+    }
+
     fun clearMessages() {
         _uiState.value = _uiState.value.copy(error = null, success = null)
     }
@@ -101,6 +151,7 @@ class MovieViewModel : ViewModel() {
 
 data class MovieUiState(
     val isLoading: Boolean = false,
+    val isCreatingNew: Boolean = false, // Add this
     val movie: Movie? = null,
     val error: String? = null,
     val success: String? = null
