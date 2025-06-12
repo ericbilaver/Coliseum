@@ -19,3 +19,9 @@ data class Auditorium(
     val number: Int = 0,
     val type: String = "",
 )
+
+data class TheatreSearchSuggestion(
+    val name: String,
+    val id: String,
+
+)
