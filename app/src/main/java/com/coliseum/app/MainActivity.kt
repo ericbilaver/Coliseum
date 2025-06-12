@@ -168,6 +168,9 @@ fun SearchNavHost() {
                 SearchScreen(
                     onTheatreClick = { theatreId ->
                         searchNavController.navigate(SearchScreens.Theatre.createRoute(theatreId))
+                    },
+                    onMovieClick = { movieId ->
+                        searchNavController.navigate(HomeScreens.MovieDetails.createRoute(movieId))
                     }
                 )
             }
@@ -185,6 +188,22 @@ fun SearchNavHost() {
                     Text("Go Back")
                 }
                 TheatreScreen(theatreId = theatreId)
+            }
+        }
+
+        composable(
+            HomeScreens.MovieDetails.route,
+            arguments = listOf(
+                navArgument("movieId") { type = NavType.IntType }
+            )
+        ) {
+            val movieId = it.arguments?.getInt("movieId") ?: 0
+            Column {
+                Text("Detail")
+                Button(onClick = { searchNavController.popBackStack() }) {
+                    Text("Go Back")
+                }
+                MovieScreen(movieId = movieId.toString())
             }
         }
     }

@@ -19,19 +19,26 @@ class SearchViewModel @Inject constructor(): ViewModel() {
     val searchQuery = MutableStateFlow("")
     val movieList = mutableStateListOf<TmdbMovie>()
     val theatreList = mutableStateListOf<TheatreSearchSuggestion>()
+    val searchType = MutableStateFlow(SearchType.THEATRES)
 
     fun onQueryChange(query: String) {
         searchQuery.value = query
     }
 
-    fun updateSearchSuggestions(searchQuery: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            movieList.removeAll(movieList)
-            movieList.addAll(TmdbClient.tmdb.search.findMovies(
-                query = searchQuery,
-                page = 1
-            ).results)
+    fun onSearchTypeChange(newSearchType: SearchType) {
+        searchType.value = newSearchType
+    }
+
+    fun updateSuggestions(searchQuery: String) {
+        if (searchType.value == SearchType.THEATRES) {
+            updateTheatreSuggestions(searchQuery)
         }
+        else {
+            updateMovieSuggestions(searchQuery)
+        }
+    }
+
+    fun updateTheatreSuggestions(searchQuery: String) {
         viewModelScope.launch(Dispatchers.IO) {
             Firebase.firestore
                 .collection("theatres-test")
@@ -51,4 +58,16 @@ class SearchViewModel @Inject constructor(): ViewModel() {
                 }
         }
     }
+
+    fun updateMovieSuggestions(searchQuery: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            movieList.removeAll(movieList)
+            movieList.addAll(TmdbClient.tmdb.search.findMovies(
+                query = searchQuery,
+                page = 1
+            ).results)
+        }
+    }
+
+
 }
