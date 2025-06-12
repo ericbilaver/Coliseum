@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,7 +24,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -43,7 +41,6 @@ import com.coliseum.app.ui.screens.searchscreen.SearchScreen
 import com.coliseum.app.ui.screens.theatre.TheatreScreen
 import com.coliseum.app.ui.screens.user.UserScreen
 import com.coliseum.app.ui.theme.ColiseumTheme
-import com.coliseum.app.ui.theme.Pink40
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -134,7 +131,7 @@ fun HomeNavHost() {
             Column {
                 Text("Home")
                 HomeScreen(
-                    onClick = { movieId ->
+                    onMovieClick = { movieId ->
                         homeNavController.navigate(HomeScreens.MovieDetails.createRoute(movieId))
                     }
                 )
