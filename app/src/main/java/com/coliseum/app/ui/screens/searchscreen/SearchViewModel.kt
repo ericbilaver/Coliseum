@@ -27,6 +27,8 @@ class SearchViewModel @Inject constructor(): ViewModel() {
 
     fun onSearchTypeChange(newSearchType: SearchType) {
         searchType.value = newSearchType
+        movieList.removeAll(movieList)
+        theatreList.removeAll(theatreList)
     }
 
     fun updateSuggestions(searchQuery: String) {
